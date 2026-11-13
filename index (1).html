@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Student Attendance &amp; Profile Tracker</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f6f7f9;--card:#fff;--tx:#1d2330;--mu:#6b7385;--bd:#dde1e8;--ac:#2f5fd0;--act:#fff;--ok:#1f8a4c;--no:#c23b3b;--lt:#b7791f;--ex:#5b6ad0}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171d;--card:#1e222b;--tx:#e8eaf0;--mu:#9aa2b4;--bd:#323846;--ac:#6b93f0;--act:#10131a;--ok:#4cc27d;--no:#ef7373;--lt:#e0a94d;--ex:#8f9bf0}}
+:root[data-theme="dark"]{--bg:#14171d;--card:#1e222b;--tx:#e8eaf0;--mu:#9aa2b4;--bd:#323846;--ac:#6b93f0;--act:#10131a;--ok:#4cc27d;--no:#ef7373;--lt:#e0a94d;--ex:#8f9bf0}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:0 0 2px}.sub{color:var(--mu);font-size:13px;margin-bottom:14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px;margin-bottom:14px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+label{display:block;font-size:12px;color:var(--mu);margin-bottom:3px}
+input,select{width:100%;padding:8px 9px;border:1px solid var(--bd);border-radius:7px;background:var(--bg);color:var(--tx);font:inherit}
+button{padding:8px 13px;border:1px solid var(--bd);border-radius:7px;background:var(--card);color:var(--tx);font:inherit;cursor:pointer}
+button.pri{background:var(--ac);color:var(--act);border-color:var(--ac)}
+button.sm{padding:4px 9px;font-size:13px}
+.tabs button{border-radius:7px 7px 0 0}.tabs button.on{background:var(--ac);color:var(--act);border-color:var(--ac)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.full{grid-column:1/-1}
+.sec{font-weight:600;font-size:13px;margin:12px 0 6px;color:var(--ac)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:640px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--bd);font-size:14px;vertical-align:top}
+th{color:var(--mu);font-size:12px;font-weight:600}
+.mu{color:var(--mu)}.st{font-size:12px;color:var(--mu)}
+.pill{display:inline-flex;gap:4px}
+.pill button{padding:4px 10px;font-weight:600;min-width:34px}
+.pill button.on[data-v="P"]{background:var(--ok);color:#fff;border-color:var(--ok)}
+.pill button.on[data-v="A"]{background:var(--no);color:#fff;border-color:var(--no)}
+.pill button.on[data-v="L"]{background:var(--lt);color:#fff;border-color:var(--lt)}
+.pill button.on[data-v="E"]{background:var(--ex);color:#fff;border-color:var(--ex)}
+button.pay{min-width:84px;font-weight:600;font-size:13px;padding:4px 8px}button.pay.paid{background:var(--ok);color:#fff;border-color:var(--ok)}button.pay.unp{background:var(--no);color:#fff;border-color:var(--no)}input.rm{min-width:120px;padding:5px 7px}
+.cP{color:var(--ok);font-weight:700}.cA{color:var(--no);font-weight:700}.cL{color:var(--lt);font-weight:700}.cE{color:var(--ex);font-weight:700}
+#srows td,#shead th,#sfoot td{text-align:center}#srows td:first-child,#shead th:first-child,#sfoot td:first-child{text-align:left}
+.hide{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Student Attendance & Profile Tracker</h1>
+  <div class="sub" id="status">Loading…</div>
+
+  <div class="card bar">
+    <div style="flex:1;min-width:200px"><label>Batch</label><select id="batch"></select></div>
+    <div style="flex:1;min-width:200px"><label>Search name</label><input id="q" placeholder="Type a name…"></div>
+    <div style="align-self:flex-end"><button id="exp">Export CSV</button></div>
+  </div>
+
+  <div class="tabs"><button data-tab="stu" class="on">Student Profiles</button> <button data-tab="att">Attendance</button> <button data-tab="typ">Typing Test</button> <button data-tab="sum">Attendance Summary</button> <button data-tab="pay">Payments</button></div>
+
+  <div id="stu" class="card" style="border-top-left-radius:0">
+    <form id="f" onsubmit="return false">
+      <div class="sec" id="ftitle">Add student</div>
+      <div class="grid">
+        <div><label>Last name *</label><input name="last" required></div>
+        <div><label>First name *</label><input name="first" required></div>
+        <div><label>Middle name</label><input name="middle"></div>
+        <div><label>Middle initial</label><input name="mi" maxlength="2"></div>
+        <div><label>Birthday</label><input name="bday" type="date"></div>
+        <div><label>Date enrolled</label><input name="date" type="date"></div>
+        <div><label>Gender</label><select name="gender"><option value="">Select…</option><option>Male</option><option>Female</option><option>Other</option></select></div>
+        <div><label>Contact number</label><input name="phone" type="tel"></div>
+      </div>
+      <div class="sec">Address</div>
+      <div class="grid">
+        <div><label>Street / House no.</label><input name="street"></div>
+        <div><label>Barangay *</label><input name="brgy" required></div>
+        <div><label>City / Municipality</label><input name="city"></div>
+        <div><label>Province</label><input name="prov"></div>
+      </div>
+      <div class="sec">Emergency contact</div>
+      <div class="grid">
+        <div><label>Contact name</label><input name="ename"></div>
+        <div><label>Contact phone</label><input name="ephone" type="tel"></div>
+      </div>
+      <div style="margin-top:12px"><button class="pri" id="save">Add student</button> <button type="button" id="cancel" class="hide">Cancel edit</button></div>
+    </form>
+    <div class="sec" id="count" style="margin-top:20px"></div>
+    <div class="scroll"><table><thead><tr><th>Name</th><th>Gender</th><th>Birthday</th><th>Contact</th><th>Address</th><th>Emergency contact</th><th>Typing (latest)</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
+  </div>
+
+  <div id="att" class="card hide" style="border-top-left-radius:0">
+    <div class="bar" style="margin-bottom:10px">
+      <div><label>Date</label><input type="date" id="adate"></div>
+      <div class="st" style="flex:1">P = Present · A = Absent · L = Late · E = Excused. Saves automatically.</div>
+    </div>
+    <div class="scroll"><table><thead><tr><th>Student</th><th>Status on this date</th><th>Sessions</th><th>Attendance rate</th></tr></thead><tbody id="arows"></tbody></table></div>
+  </div>
+
+  <div id="typ" class="card hide" style="border-top-left-radius:0">
+    <div class="sec" style="margin-top:0">Record typing test score</div>
+    <div class="grid">
+      <div><label>Student</label><select id="tstu"></select></div>
+      <div><label>Test date</label><input type="date" id="tdate"></div>
+      <div><label>Speed (WPM) *</label><input type="number" id="twpm" min="0" step="0.1"></div>
+      <div><label>Accuracy (%)</label><input type="number" id="tacc" min="0" max="100" step="0.1"></div>
+    </div>
+    <div style="margin-top:10px"><button class="pri" id="tadd">Add score</button></div>
+    <div class="sec" style="margin-top:20px">Summary per student</div>
+    <div class="scroll"><table style="min-width:480px"><thead><tr><th>Student</th><th>Tests taken</th><th>Latest WPM</th><th>Best WPM</th><th>Average WPM</th></tr></thead><tbody id="tsum"></tbody></table></div>
+    <div class="sec" style="margin-top:20px">All test scores</div>
+    <div class="scroll"><table style="min-width:480px"><thead><tr><th>Date</th><th>Student</th><th>WPM</th><th>Accuracy</th><th></th></tr></thead><tbody id="tlog"></tbody></table></div>
+  </div>
+
+  <div id="sum" class="card hide" style="border-top-left-radius:0">
+    <div class="sec" style="margin-top:0">Attendance compilation</div>
+    <div class="st" style="margin-bottom:8px">One column per class date. P = Present, A = Absent, L = Late, E = Excused, · = not marked. Rate counts Present and Late.</div>
+    <div class="scroll"><table style="min-width:0"><thead id="shead"></thead><tbody id="srows"></tbody><tfoot id="sfoot"></tfoot></table></div>
+  </div>
+
+  <div id="pay" class="card hide" style="border-top-left-radius:0">
+    <div class="sec" style="margin-top:0">Fees (₱) for this batch — edit anytime and the totals update automatically</div>
+    <div class="grid">
+      <div><label>ID fee</label><input type="number" id="fid" min="0" step="any"></div>
+      <div><label>Contact Center fee</label><input type="number" id="fcc" min="0" step="any"></div>
+      <div><label>Virtual Assistant fee</label><input type="number" id="fva" min="0" step="any"></div>
+    </div>
+    <div class="grid" id="psum" style="margin-top:14px"></div>
+    <div class="sec" style="margin-top:20px">Payment status</div>
+    <div class="st" style="margin-bottom:8px">Tap PAID / UNPAID to switch. “Items paid” counts how many of the three the student has paid.</div>
+    <div class="scroll"><table style="min-width:980px"><thead><tr><th>No.</th><th>Student</th><th>ID</th><th>Contact Center</th><th>Virtual Assistant</th><th>Items paid</th><th>Amount paid</th><th>Remarks (ID)</th><th>Remarks (CC)</th><th>Remarks (VA)</th></tr></thead><tbody id="prows"></tbody></table></div>
+  </div>
+</div>
+
+<script>
+const YEARS=[];for(let y=2026;y<=2040;y++)YEARS.push(y);
+const $=s=>document.querySelector(s), esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+let DB=null,UID=null,list=[],editId=null,batch=null;
+
+$("#batch").innerHTML=YEARS.map(y=>`<optgroup label="${y}">`+[1,2,3].map(n=>`<option value="${n}-${y}">Batch ${n}-${y}</option>`).join("")+`</optgroup>`).join("");
+$("#adate").value=today();$("#tdate").value=today();
+
+async function load(){
+  try{
+    if(DB){const s=await DB.doc("data/users/"+UID+"/b"+batch.replace("-","_")).get();const d=s.exists?s.data():{};fees=d.fees||{id:0,cc:0,va:0};return d.students||[]}
+    fees=JSON.parse(localStorage.getItem("fee_"+batch)||'{"id":0,"cc":0,"va":0}');return JSON.parse(localStorage.getItem("trk_"+batch)||"[]");
+  }catch(e){$("#status").textContent="Could not load this batch.";return[]}
+}
+async function persist(){
+  try{
+    if(DB)await DB.doc("data/users/"+UID+"/b"+batch.replace("-","_")).set({students:list,fees});
+    else{localStorage.setItem("trk_"+batch,JSON.stringify(list));localStorage.setItem("fee_"+batch,JSON.stringify(fees))}
+  }catch(e){$("#status").textContent="Save failed — please try again."}
+}
+async function switchBatch(){batch=$("#batch").value;list=await load();cancelEdit();render()}
+
+const fullName=s=>`${s.last}, ${s.first}${s.mi?" "+s.mi.replace(/\.?$/,"."):""}`+(s.middle?` (${s.middle})`:"");
+const filtered=()=>{const q=$("#q").value.trim().toLowerCase();return list.filter(s=>!q||(s.last+" "+s.first+" "+(s.middle||"")).toLowerCase().includes(q)).sort((a,b)=>(a.last+a.first).localeCompare(b.last+b.first))};
+const sessions=()=>new Set(list.flatMap(s=>Object.keys(s.att||{})));
+
+function render(){
+  const L=filtered();
+  $("#count").textContent=`${batch?("Batch "+batch):""} — ${list.length} student${list.length==1?"":"s"}`;
+  $("#rows").innerHTML=L.length?L.map(s=>`<tr><td><b>${esc(fullName(s))}</b></td><td>${esc(s.gender)}</td><td>${esc(s.bday)}</td><td>${esc(s.phone)}</td>
+    <td>${esc([s.street,"Brgy. "+s.brgy,s.city,s.prov].filter(x=>x&&x!=="Brgy. ").join(", "))}</td>
+    <td>${esc(s.ename)}<div class="mu">${esc(s.ephone)}</div></td><td>${typLatest(s)}</td>
+    <td style="white-space:nowrap"><button class="sm" data-edit="${s.id}">Edit</button> <button class="sm" data-del="${s.id}">Delete</button></td></tr>`).join(""):`<tr><td colspan="8" class="mu">No students yet in this batch.</td></tr>`;
+  const d=$("#adate").value,n=sessions().size;
+  $("#arows").innerHTML=L.length?L.map(s=>{
+    const a=s.att||{},v=a[d],k=Object.keys(a).length,p=Object.values(a).filter(x=>x==="P"||x==="L").length;
+    return `<tr><td><b>${esc(fullName(s))}</b></td><td><span class="pill">${["P","A","L","E"].map(x=>`<button data-m="${s.id}" data-v="${x}" class="${v===x?"on":""}">${x}</button>`).join("")}</span></td>
+    <td>${k} of ${n}</td><td>${n?Math.round(p/n*100)+"%":"—"}</td></tr>`}).join(""):`<tr><td colspan="4" class="mu">Add students first.</td></tr>`;
+  renderMore();$("#status").textContent=DB?"Saved to your account (private to you).":"Saved in this browser only. Use Export CSV often to keep a backup.";
+}
+
+$("#f").addEventListener("input",e=>{if(e.target.name==="middle"&&!$("[name=mi]").dataset.t)$("[name=mi]").value=(e.target.value.trim()[0]||"").toUpperCase()});
+$("[name=mi]").addEventListener("input",e=>e.target.dataset.t=1);
+$("#save").onclick=async()=>{
+  const f=$("#f");if(!f.reportValidity())return;
+  const d=Object.fromEntries(new FormData(f).entries());
+  if(editId){const s=list.find(x=>x.id===editId);Object.assign(s,d)}
+  else list.push({...d,id:"s"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),att:{}});
+  await persist();cancelEdit();render();
+};
+function cancelEdit(){editId=null;$("#f").reset();delete $("[name=mi]").dataset.t;$("#ftitle").textContent="Add student";$("#save").textContent="Add student";$("#cancel").classList.add("hide")}
+$("#cancel").onclick=cancelEdit;
+
+document.addEventListener("click",async e=>{
+  const t=e.target;
+  if(t.dataset.tab){document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b===t));["stu","att","typ","sum","pay"].forEach(i=>$("#"+i).classList.toggle("hide",t.dataset.tab!==i))}
+  if(t.dataset.tdel){const[sid,tid]=t.dataset.tdel.split("|");const s=list.find(x=>x.id===sid);s.typ=(s.typ||[]).filter(x=>x.id!==tid);render();await persist()}
+  if(t.dataset.edit){const s=list.find(x=>x.id===t.dataset.edit);editId=s.id;for(const el of $("#f").elements)if(el.name)el.value=s[el.name]||"";$("[name=mi]").dataset.t=1;$("#ftitle").textContent="Edit student";$("#save").textContent="Save changes";$("#cancel").classList.remove("hide");$("#f").scrollIntoView({behavior:"smooth"})}
+  if(t.dataset.del){const s=list.find(x=>x.id===t.dataset.del);if(confirm("Delete "+fullName(s)+" and their attendance records?")){list=list.filter(x=>x!==s);await persist();render()}}
+  if(t.dataset.m){const s=list.find(x=>x.id===t.dataset.m),d=$("#adate").value;if(!d)return;s.att=s.att||{};if(s.att[d]===t.dataset.v)delete s.att[d];else s.att[d]=t.dataset.v;render();await persist()}
+});
+const tests=s=>(s.typ||[]).slice().sort((a,b)=>a.date.localeCompare(b.date));
+function typStats(s){const t=tests(s);if(!t.length)return[0,"","",""];const w=t.map(x=>x.wpm);return[t.length,w[w.length-1],Math.max(...w),Math.round(w.reduce((a,b)=>a+b,0)/w.length*10)/10]}
+const typLatest=s=>{const t=typStats(s);return t[0]?`${t[1]} WPM`:'<span class="mu">—</span>'};
+function renderMore(){renderPay();
+  const L=filtered(),all=[...list].sort((a,b)=>(a.last+a.first).localeCompare(b.last+b.first));
+  const sel=$("#tstu"),cur=sel.value;
+  sel.innerHTML=all.map(s=>`<option value="${s.id}">${esc(fullName(s))}</option>`).join("");if(all.some(s=>s.id===cur))sel.value=cur;
+  $("#tsum").innerHTML=L.length?L.map(s=>{const t=typStats(s),h=t[0]>0;return `<tr><td><b>${esc(fullName(s))}</b></td><td>${t[0]}</td><td>${h?t[1]:"—"}</td><td>${h?t[2]:"—"}</td><td>${h?t[3]:"—"}</td></tr>`}).join(""):`<tr><td colspan="5" class="mu">No students.</td></tr>`;
+  const log=L.flatMap(s=>tests(s).map(x=>({s,x}))).sort((a,b)=>b.x.date.localeCompare(a.x.date));
+  $("#tlog").innerHTML=log.length?log.map(({s,x})=>`<tr><td>${esc(x.date)}</td><td>${esc(fullName(s))}</td><td>${x.wpm}</td><td>${x.acc===""?"—":x.acc+"%"}</td><td><button class="sm" data-tdel="${s.id}|${x.id}">Delete</button></td></tr>`).join(""):`<tr><td colspan="5" class="mu">No test scores yet.</td></tr>`;
+  const dates=[...sessions()].sort(),n=dates.length,cnt=(a,v)=>Object.values(a).filter(x=>x===v).length;
+  $("#shead").innerHTML=`<tr><th>Student</th>${dates.map(d=>`<th>${esc(d.slice(5))}<div class="mu" style="font-weight:400">${esc(d.slice(0,4))}</div></th>`).join("")}<th>P</th><th>A</th><th>L</th><th>E</th><th>Rate</th></tr>`;
+  $("#srows").innerHTML=L.length?L.map(s=>{const a=s.att||{},p=cnt(a,"P"),l=cnt(a,"L");return `<tr><td><b>${esc(fullName(s))}</b></td>${dates.map(d=>`<td class="c${a[d]||""}">${a[d]||"·"}</td>`).join("")}<td>${p}</td><td>${cnt(a,"A")}</td><td>${l}</td><td>${cnt(a,"E")}</td><td><b>${n?Math.round((p+l)/n*100)+"%":"—"}</b></td></tr>`}).join(""):`<tr><td class="mu">No students.</td></tr>`;
+  $("#sfoot").innerHTML=n&&L.length?`<tr><td><b>Present/Late per day</b></td>${dates.map(d=>`<td>${L.filter(s=>["P","L"].includes((s.att||{})[d])).length}/${L.length}</td>`).join("")}<td colspan="5"></td></tr>`:"";
+}
+$("#tadd").onclick=async()=>{
+  const s=list.find(x=>x.id===$("#tstu").value),w=parseFloat($("#twpm").value),ac=$("#tacc").value,d=$("#tdate").value;
+  if(!s||!d||isNaN(w)){alert("Choose a student, a date, and enter the WPM.");return}
+  (s.typ=s.typ||[]).push({id:"t"+Date.now().toString(36),date:d,wpm:w,acc:ac===""?"":parseFloat(ac)});
+  $("#twpm").value="";$("#tacc").value="";render();await persist();
+};
+let fees={id:0,cc:0,va:0};
+const ITEMS=[["id","ID"],["cc","Contact Center"],["va","Virtual Assistant"]];
+const fv=k=>+fees[k]||0,peso=n=>"\u20b1"+(Math.round(n*100)/100).toLocaleString("en-PH");
+const paidAmt=s=>ITEMS.reduce((a,[k])=>a+(((s.pay||{})[k])?fv(k):0),0);
+function renderPay(){
+  ITEMS.forEach(([k])=>{const el=$("#f"+k);if(document.activeElement!==el)el.value=fees[k]||""});
+  const L=filtered(),N=list.length;let tot=0;
+  const cards=ITEMS.map(([k,n])=>{const p=list.filter(s=>(s.pay||{})[k]).length,amt=p*fv(k);tot+=amt;
+    return `<div class="card" style="margin:0"><div class="mu">${n}</div><div style="font-size:22px;font-weight:700">${p} <span class="mu" style="font-size:14px;font-weight:400">of ${N} paid</span></div><div>${peso(amt)} collected</div><div class="mu">${N-p} unpaid \u00b7 ${peso((N-p)*fv(k))} to collect</div></div>`}).join("");
+  const exp=N*(fv("id")+fv("cc")+fv("va"));
+  $("#psum").innerHTML=cards+`<div class="card" style="margin:0;border-color:var(--ac)"><div class="mu">TOTAL PAID</div><div style="font-size:24px;font-weight:700;color:var(--ok)">${peso(tot)}</div><div class="mu">Expected ${peso(exp)} \u00b7 Balance ${peso(exp-tot)}</div></div>`;
+  $("#prows").innerHTML=L.length?L.map((s,i)=>{const p=s.pay||{},c=ITEMS.filter(([k])=>p[k]).length;
+    return `<tr><td>${i+1}</td><td><b>${esc(fullName(s))}</b></td>${ITEMS.map(([k])=>`<td><button class="pay ${p[k]?"paid":"unp"}" data-p="${s.id}|${k}">${p[k]?"PAID":"UNPAID"}</button></td>`).join("")}<td><b>${c}</b></td><td>${peso(paidAmt(s))}</td>${ITEMS.map(([k])=>`<td><input class="rm" data-r="${s.id}|${k}" value="${esc(p["r"+k]||"")}"></td>`).join("")}</tr>`}).join(""):`<tr><td colspan="10" class="mu">Add students first.</td></tr>`;
+}
+ITEMS.forEach(([k])=>{const el=$("#f"+k);el.oninput=()=>{fees[k]=parseFloat(el.value)||0;renderPay()};el.onchange=()=>persist()});
+document.addEventListener("click",async e=>{const t=e.target;if(!t.dataset.p)return;const[sid,k]=t.dataset.p.split("|"),s=list.find(x=>x.id===sid);s.pay=s.pay||{};s.pay[k]=!s.pay[k];render();await persist()});
+document.addEventListener("change",async e=>{const t=e.target;if(!t.dataset.r)return;const[sid,k]=t.dataset.r.split("|"),s=list.find(x=>x.id===sid);s.pay=s.pay||{};s.pay["r"+k]=t.value;await persist()});
+$("#batch").onchange=switchBatch;$("#q").oninput=render;$("#adate").onchange=render;
+
+$("#exp").onclick=async()=>{
+  const dates=[...sessions()].sort();
+  const H=["Batch","Last name","First name","Middle name","Middle initial","Birthday","Date enrolled","Gender","Contact number","Street","Barangay","City/Municipality","Province","Emergency contact","Emergency phone",...dates,"Attendance rate","Typing tests","Latest WPM","Best WPM","Average WPM","ID","Contact Center","Virtual Assistant","Total paid"];
+  const q=v=>`"${String(v??"").replace(/"/g,'""')}"`;
+  const rows=list.map(s=>{const a=s.att||{},p=Object.values(a).filter(x=>x==="P"||x==="L").length;
+    return [batch,s.last,s.first,s.middle,s.mi,s.bday,s.date,s.gender,s.phone,s.street,s.brgy,s.city,s.prov,s.ename,s.ephone,...dates.map(d=>a[d]||""),dates.length?Math.round(p/dates.length*100)+"%":"",...typStats(s),...ITEMS.map(([k])=>(s.pay||{})[k]?"PAID":"UNPAID"),paidAmt(s)].map(q).join(",")});
+  const csv="\ufeff"+[H.map(q).join(","),...rows].join("\n"),name="batch-"+batch+".csv";
+  try{const dl=window.claude&&await claude.use("downloads");if(!dl)throw 0;await dl.save({filename:name,data:csv})}
+  catch(err){if(err&&err.code==="cancelled")return;const a=document.createElement("a");a.href="data:text/csv;charset=utf-8,"+encodeURIComponent(csv);a.download=name;a.click()}
+};
+
+(async()=>{
+  try{
+    if(window.claude){const u=await claude.use("user");const db=await claude.use("db");if(u&&db){UID=await u.id();DB=db}}
+  }catch(e){DB=null}
+  await switchBatch();
+})();
+</script>
+</body>
+</html>
